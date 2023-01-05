@@ -2,16 +2,24 @@ import { useState } from 'react';
 import styles from '../styles/keys.module.scss';
 
 type KeysProps = {
-    data: (result: number) => void;
+    equationData: (result: string) => void;
+    resultData: (result: number) => void;
 }
 
-const Keys = ({ data }: KeysProps) => {
+const Keys = ({ equationData, resultData }: KeysProps) => {
     const [values, setValues] = useState<string[]>([]);
 
     const add = (value: string) => {
         let newValues = values;
-        newValues.push(value)
-        setValues(newValues)
+        newValues.push(value);
+        setValues(newValues);
+
+        if (value == "/") {
+            value = "÷";
+        } else if (value == "*") {
+            value = "×";
+        }
+        equationData(value);
     };
 
     const calculate = () => {
@@ -26,11 +34,11 @@ const Keys = ({ data }: KeysProps) => {
         })
 
         if (validation) {
-            result = NaN
+            result = NaN;
         } else {
             result = eval(equation);
         }
-        data(result);
+        resultData(result);
         setValues([]);
     };
 
