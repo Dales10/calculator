@@ -1,0 +1,27 @@
+.rowKeys {
+    position: relative;
+    margin-top: .2rem;
+
+    button {
+        background-color: #212624;
+        width: 25%;
+        height: 4rem;
+        font-weight: 400;
+        font-size: 105%;
+        border-radius: 10px;
+        transition: 10ms;
+        user-select: none;
+
+        &:not(.inactive):active {
+            background-color: #424e4a;
+        }
+    }
+
+    .operations {
+        font-size: 150%;
+    }
+}
+
+.equal {
+    color: #feb800;
+}
