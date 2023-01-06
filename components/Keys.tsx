@@ -2,26 +2,52 @@ import { useState } from 'react';
 import styles from '../styles/keys.module.scss';
 
 type KeysProps = {
-    equationData: (result: string) => void;
-    resultData: (result: number) => void;
+    equationData: (value: string) => void;
+    resultData: (value: number | string) => void;
+    clearDisplay: (value: string) => void;
 }
 
-const Keys = ({ equationData, resultData }: KeysProps) => {
+const Keys = ({ equationData, resultData, clearDisplay }: KeysProps) => {
     const [values, setValues] = useState<string[]>([]);
 
+    //Adiciona novos valores no cálculo e no Display.
     const add = (value: string) => {
         let newValues = values;
-        newValues.push(value);
-        setValues(newValues);
 
-        if (value == "/") {
-            value = "÷";
-        } else if (value == "*") {
-            value = "×";
+        //Caso o último valor adicionado e o atual sejam ambos algum dos caracteres abaixo, trocará o anterior pelo atual no cálculo.
+        const lastValueAdd = ["%", "/", "*", "-", "+", "."].some(elem => {
+            return newValues[newValues.length - 1] == elem;
+        });
+        const valueAddNow = ["%", "/", "*", "-", "+", "."].some(elem => {
+            return value == elem;
+        });
+        if (lastValueAdd && valueAddNow) {
+            newValues.pop();
         }
-        equationData(value);
+        newValues.push(value);
+
+        //Se o primeiro valor digitado for qualquer caractere do array abaixo, ele não será aceito como primeiro valor.
+        if (newValues.length == 1 && isNaN(Number(newValues[0]))) {
+            const firstValue = ["%", "/", "*", "-", "+", "."].some(elem => {
+                return values[0] == elem;
+            })
+            if (firstValue) {
+                newValues.pop();
+            }
+            resultData("message invalid")
+            resetDisplay();
+        } else {
+            if (value == "/") {
+                value = "÷";
+            } else if (value == "*") {
+                value = "×";
+            }
+            equationData(value);
+        }
+        setValues(newValues);
     };
 
+    //Efetua o cálculo com base nos valores passados.
     const calculate = () => {
         var equation = '';
         var result: number;
@@ -29,11 +55,12 @@ const Keys = ({ equationData, resultData }: KeysProps) => {
             equation += values[loop];
         }
 
-        const validation = ["%", "/", "*", "-", "+", "."].some(elem => {
+        //Se o último valor do cálculo não for válido, irá ativar a messagem de valor inválido.
+        const lastValue = ["%", "/", "*", "-", "+", "."].some(elem => {
             return elem == values[values.length - 1];
         })
 
-        if (validation) {
+        if (lastValue) {
             result = NaN;
         } else {
             result = eval(equation);
@@ -42,10 +69,16 @@ const Keys = ({ equationData, resultData }: KeysProps) => {
         setValues([]);
     };
 
+    //Limpa o Display.
+    const resetDisplay = () => {
+        equationData('clear');
+        resultData('');
+    }
+
     return (
         <>
             <div className={styles.rowKeys}>
-                <button>c</button>
+                <button onClick={() => resetDisplay()}>c</button>
                 <button>+/-</button>
                 <button onClick={() => add("%")}>%</button>
                 <button
