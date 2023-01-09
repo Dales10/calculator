@@ -3,27 +3,32 @@ import Display from "./Display";
 import Keys from "./Keys";
 import { useState } from 'react';
 
+type DatasProps = {
+    equation: string[];
+    result: number;
+}
+
 const Body = () => {
-    const [equation, setEquation] = useState<string>('');
-    const [result, setResult] = useState<number | string>('');
-    const [clear, setClear] = useState('');
+    const [datas, setDatas] = useState<DatasProps>({ equation: [], result: NaN });
     const [messageInvalid, setMessageInvalid] = useState({ opacity: 0 });
 
-    const equationData = (value: string) => {
-        setEquation(value);
+    const print = (values: string[], result: number) => {
+        let equation: string[] = values;
+        if (equation.includes('/') || equation.includes('*')) {
+            equation = equation.map(value => {
+                if (value == '/') {
+                    return value.replace('/', '÷');
+                } else if (value == '*') {
+                    return value.replace('*', '×');
+                }
+                return value;
+            })
+        }
+        setDatas({ equation, result });
     };
 
-    const resultData = (value: number | string) => {
-        setResult(value);
-    };
-
-    const clearDisplay = (value: string) => {
-        setClear(value);
-    }
-
-    if (isNaN(Number(result))) {
+    const invalidMessageActivate = () => {
         setMessageInvalid({ opacity: 1 })
-        setResult("");
         setTimeout(() => {
             setMessageInvalid({ opacity: 0 })
         }, 1000);
@@ -31,8 +36,8 @@ const Body = () => {
 
     return (
         <div className={styles.body}>
-            <Display equation={equation} result={result}  />
-            <Keys equationData={equationData} resultData={resultData} clearDisplay={clearDisplay} />
+            <Display datas={datas} />
+            <Keys print={print} message={invalidMessageActivate} />
 
             <div style={messageInvalid} className={styles.messageInvalid}>
                 <p>Formato usado inválido.</p>

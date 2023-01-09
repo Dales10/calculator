@@ -12,8 +12,13 @@
         transition: 10ms;
         user-select: none;
 
-        &:not(.inactive):active {
-            background-color: #424e4a;
+        &:hover {
+            transition: 500ms;
+            background-color: #262c29;
+        }
+
+        &:focus {
+            animation: click 200ms ease-in-out;
         }
     }
 
@@ -24,4 +29,15 @@
 
 .equal {
     color: #feb800;
+}
+
+@keyframes click {
+    0%, 100% {
+        transform: scale(1);
+        background-color: #212624;
+    }
+    50% {
+        transform: scale(0.98);
+        background-color: #444b49;
+    }
 }
