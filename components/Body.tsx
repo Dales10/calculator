@@ -16,11 +16,10 @@ const Body = () => {
         let equation: string[] = values;
         if (equation.includes('/') || equation.includes('*')) {
             equation = equation.map(value => {
-                if (value == '/') {
+                if (value == '/')
                     return value.replace('/', '÷');
-                } else if (value == '*') {
+                else if (value == '*')
                     return value.replace('*', '×');
-                }
                 return value;
             })
         }

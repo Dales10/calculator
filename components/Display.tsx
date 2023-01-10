@@ -13,11 +13,10 @@ const Display = ({ datas }: DisplayProps) => {
     }, '');
 
     const result = () => {
-        if (isNaN(datas.result)) {
+        if (isNaN(datas.result))
             return '';
-        } else {
-            return datas.result;
-        }
+        else
+            return datas.result.toLocaleString('pt-br');
     };
 
 
