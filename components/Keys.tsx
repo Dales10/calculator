@@ -157,56 +157,56 @@ const Keys = ({ print, message }: KeysProps) => {
     return (
         <>
             <div className={styles.rowKeys}>
-                <button onClick={resetAll}>c</button>
-                <button onClick={() => add('(-')}>+/-</button>
-                <button onClick={() => add("(")}>()</button>
+                <button onClick={(e) => { resetAll(); e.currentTarget.blur(); }}>c</button>
+                <button onClick={(e) => { add('(-'); e.currentTarget.blur(); }}>+/-</button>
+                <button onClick={(e) => { add("("); e.currentTarget.blur(); }}>()</button>
                 <button
                     className={styles.operations}
-                    onClick={() => add("/")}
+                    onClick={(e) => { add("/"); e.currentTarget.blur(); }}
                 >
                     ÷
                 </button>
             </div>
             <div className={styles.rowKeys}>
-                <button onClick={() => add("7")}>7</button>
-                <button onClick={() => add("8")}>8</button>
-                <button onClick={() => add("9")}>9</button>
+                <button onClick={(e) => { add("7"); e.currentTarget.blur(); }}>7</button>
+                <button onClick={(e) => { add("8"); e.currentTarget.blur(); }}>8</button>
+                <button onClick={(e) => { add("9"); e.currentTarget.blur(); }}>9</button>
                 <button
                     className={styles.operations}
-                    onClick={() => add("*")}
+                    onClick={(e) => { add("*"); e.currentTarget.blur(); }}
                 >
                     ×
                 </button>
             </div>
             <div className={styles.rowKeys}>
-                <button onClick={() => add("4")}>4</button>
-                <button onClick={() => add("5")}>5</button>
-                <button onClick={() => add("6")}>6</button>
+                <button onClick={(e) => { add("4"); e.currentTarget.blur(); }}>4</button>
+                <button onClick={(e) => { add("5"); e.currentTarget.blur(); }}>5</button>
+                <button onClick={(e) => { add("6"); e.currentTarget.blur(); }}>6</button>
                 <button
                     className={styles.operations}
-                    onClick={() => add("-")}
+                    onClick={(e) => { add("-"); e.currentTarget.blur(); }}
                 >
                     -
                 </button>
             </div>
             <div className={styles.rowKeys}>
-                <button onClick={() => add("1")}>1</button>
-                <button onClick={() => add("2")}>2</button>
-                <button onClick={() => add("3")}>3</button>
+                <button onClick={(e) => { add("1"); e.currentTarget.blur(); }}>1</button>
+                <button onClick={(e) => { add("2"); e.currentTarget.blur(); }}>2</button>
+                <button onClick={(e) => { add("3"); e.currentTarget.blur(); }}>3</button>
                 <button
                     className={styles.operations}
-                    onClick={() => add("+")}
+                    onClick={(e) => { add("+"); e.currentTarget.blur(); }}
                 >
                     +
                 </button>
             </div>
             <div className={styles.rowKeys}>
                 <button disabled className={styles.disabled}>⠀</button>
-                <button onClick={() => add("0")}>0</button>
-                <button onClick={() => add("0.")}>,</button>
+                <button onClick={(e) => { add("0"); e.currentTarget.blur(); }}>0</button>
+                <button onClick={(e) => { add("0."); e.currentTarget.blur(); }}>,</button>
                 <button
                     className={`${styles.operations} ${styles.equal}`}
-                    onClick={() => calculate()}
+                    onClick={(e) => { calculate(); e.currentTarget.blur(); }}
                 >
                     =
                 </button>
