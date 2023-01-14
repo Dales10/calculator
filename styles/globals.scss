@@ -1,10 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 $color_main: #e1e8f8;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: $color_main;
+    font-family: 'Rubik', sans-serif;
+}
 
 body {
     display: flex;
@@ -12,6 +16,8 @@ body {
     align-items: center;
     min-height: 100vh;
     background-color: $color_main;
-    color: $color_main;
-    font-family: 'Rubik', sans-serif;
+}
+
+button {
+    border: none;
 }

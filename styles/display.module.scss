@@ -1,7 +1,6 @@
 .display {
     position: relative;
     background-color: #212624;
-    /* max-width: 25rem; */
     height: 8rem;
 
     &::before {
@@ -10,7 +9,7 @@
         bottom: 0;
         right: -1rem;
         background-color: #feb800;
-        height: 2px;
+        height: 1.5px;
         width: calc(50% + 1rem);
     }
 }
