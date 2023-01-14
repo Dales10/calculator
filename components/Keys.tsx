@@ -7,8 +7,6 @@ type KeysProps = {
 }
 
 const Keys = ({ print, message }: KeysProps) => {
-    //Salva o último valor adicionado.
-    const [previousAddValue, setPreviousAddValue] = useState('');
     //Manipula um array com todos os valores válidos adicionados.
     const [values, setValues] = useState<string[]>([]);
     const [newCalculation, setNewCalculation] = useState(false);
@@ -24,7 +22,7 @@ const Keys = ({ print, message }: KeysProps) => {
     }
 
     const add = (value: string) => {
-        //Quando o primeiro valor do novo cálculo for feito, resetar o array de 'values'.
+        //Quando o primeiro valor do novo cálculo for digitado, reseta o array de 'values'.
         if (newCalculation) {
             setNewCalculation(false);
             values.length = 0;
@@ -34,38 +32,50 @@ const Keys = ({ print, message }: KeysProps) => {
         const lastValueAdd = ['/', '*', '-', '+'].some(elem => {
             return valueIsNumber() == elem;
         });
-        const valueAddNow = ['%', '/', '*', '-', '+'].some(elem => {
+        const valueAddNow = ['/', '*', '-', '+'].some(elem => {
             return value == elem;
         });
         if (lastValueAdd && valueAddNow)
             newValues.pop();
 
-
         if (value == '(') {
             //Fecha o parêntese que estiver aberto e antes dele tiver um número.
             for (let loop = values.length - 1; loop > 0; loop--) {
-                const numberFound = !isNaN(Number(newValues[loop])) && newValues[loop] != ')' && newValues[loop] != '(';
+                const numberFound = !isNaN(Number(newValues[loop]));
+                //Caso o valor anterior seja um operador aritmético, não deve-se colocar um parêntese de fechamento.
+                const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
+                    return elem == newValues[loop];
+                })
+                if (arithmeticSign) break;
                 if (numberFound) value = ')';
             }
             //Se um parêntese for aberto depois de um número, sem nenhum operador aritmético depois dele, será colocado o sinal de multiplicação antes do parêntese.
             if (!isNaN(Number((valueIsNumber()))) && value != ')')
                 newValues.push('*');
         }
-
         //Caso seja colocado um parêntese e antes tenha outro, um sinal de multiplicação será adicionado.
         if (value == ')' && valueIsNumber() == ')') {
-            newValues.push('*');
-            value = '(';
-        }
-
-        //Se o valor adicionado e o anterior forem ambos o símbolo de porcentagem, o valor adicionado anteriormente não muda.
-        if (valueIsNumber() == '%' && value == '%') {
-            value = previousAddValue;
-            message();
+            let opening = 0, closure = 0;
+            for (let loop = values.length - 1; loop >= 0; loop--) {
+                const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
+                    return elem == newValues[loop];
+                });
+                if (arithmeticSign) {
+                    break;
+                }
+                if (newValues[loop] == ')') {
+                    closure++;
+                } else if (newValues[loop] == '(') {
+                    opening++;
+                }
+            }
+            if (opening == closure) {
+                newValues.push('*');
+                value = '(';
+            }
         }
 
         newValues.push(value);
-
         //Troca o sinal do último valor adicionado. Se estiver positivo fica negativo, ou o inverso.
         if (value == '(-' && !isNaN(Number(values[values.length - 2]))) {
             if (newValues[newValues.length - 3] == '(-') {
@@ -77,7 +87,7 @@ const Keys = ({ print, message }: KeysProps) => {
             }
         }
 
-        const valueAfterRelatives = ['%', '/', '*'].some(elem => {
+        const valueAfterRelatives = ['/', '*'].some(elem => {
             return value == elem;
         });
         if (valueAfterRelatives && values[values.length - 2] == '(')
@@ -85,7 +95,7 @@ const Keys = ({ print, message }: KeysProps) => {
 
         if (newValues.length == 1 && isNaN(Number(newValues[0]))) {
             //Se o primeiro valor digitado for qualquer caractere do array abaixo, ele não será aceito como primeiro valor.
-            const firstValue = ["%", "/", "*", "-", "+"].some(elem => {
+            const firstValue = ["/", "*", "-", "+"].some(elem => {
                 return newValues[0] == elem;
             })
             if (firstValue) {
@@ -93,7 +103,6 @@ const Keys = ({ print, message }: KeysProps) => {
                 message();
             }
         }
-        setPreviousAddValue(value);
         setValues(newValues);
         update();
     };
@@ -107,7 +116,7 @@ const Keys = ({ print, message }: KeysProps) => {
         if (values.includes('(-')) {
             const positionError = values.indexOf('(-');
             const number = values[positionError + 1];
-            values.splice(positionError, 2, `(-${number})`);
+            values.splice(positionError, 2, `(-${number}`);
             calculate();
         }
 
@@ -116,51 +125,16 @@ const Keys = ({ print, message }: KeysProps) => {
             return elem == valueIsNumber();
         });
 
-        const percentage = () => {
-            const position = equation.indexOf('%');
-            let amount = 0;
-            for (let loop = position - 1; loop >= 0; loop--) {
-                if (isNaN(Number(equation[loop])))
-                    break;
-                else
-                    amount++;
-            }
-            let changePart = Number(equation.slice(position - amount, position));
-            changePart /= 100;
-
-            let probablePosition = position - amount - 2;
-            if (!isNaN(Number(equation[probablePosition]))) {
-                let count = 0;
-                for (let loop = probablePosition; loop >= 0; loop--) {
-                    if (!isNaN(Number(equation[loop])))
-                        count++
-                    else
-                        break;
-                }
-                let numbersBefore = '';
-                while (count) {
-                    numbersBefore += equation[probablePosition - count + 1];
-                    count--;
-                }
-                changePart = Number(numbersBefore) * changePart;
-            }
-            const changeEquation = equation.split('');
-            changeEquation.splice(
-                position - amount, amount + 1, changePart.toString(),
-            );
-            equation = '';
-            for (let loop = 0; loop < changeEquation.length; loop++)
-                equation += changeEquation[loop];
-        }
-
-        if (equation.includes('%')) {
-            let occurrences = (equation.match(/%/g) || []).length;
-            while (occurrences != 0) {
-                percentage();
-                occurrences--;
+        //Coloca parênteses no final para fechar os que foram abertos mas não fechados.
+        const countOpening = (equation.match(/\(/g) || []).length;
+        const countClosure = (equation.match(/\)/g) || []).length;
+        let difference = countOpening - countClosure;
+        if (difference != 0) {
+            while (difference) {
+                equation += ")";
+                difference--;
             }
         }
-
         try {
             if (!lastValue)
                 result = eval(equation);
@@ -168,6 +142,7 @@ const Keys = ({ print, message }: KeysProps) => {
                 result = Number(equation);
             update();
             setNewCalculation(true)
+            add("");
         } catch (err) {
             message();
         }
@@ -183,8 +158,8 @@ const Keys = ({ print, message }: KeysProps) => {
         <>
             <div className={styles.rowKeys}>
                 <button onClick={resetAll}>c</button>
+                <button onClick={() => add('(-')}>+/-</button>
                 <button onClick={() => add("(")}>()</button>
-                <button style={{opacity: 0.3}} disabled onClick={() => add("%")}>%</button>
                 <button
                     className={styles.operations}
                     onClick={() => add("/")}
@@ -226,7 +201,7 @@ const Keys = ({ print, message }: KeysProps) => {
                 </button>
             </div>
             <div className={styles.rowKeys}>
-                <button onClick={() => add('(-')}>+/-</button>
+                <button disabled className={styles.disabled}>⠀</button>
                 <button onClick={() => add("0")}>0</button>
                 <button onClick={() => add("0.")}>,</button>
                 <button
