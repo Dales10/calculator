@@ -1,9 +1,22 @@
+.delete {
+    display: flex;
+    position: relative;
+    color: #6d6d6d;
+
+    .btnDelete {
+        position: absolute;
+        top: -1.6rem;
+        right: -.2rem;
+    }
+}
+
 .rowKeys {
     position: relative;
     margin-top: .2rem;
 
     button {
         background-color: #212624;
+        color: #e1e8f8;
         width: 25%;
         height: 4rem;
         font-weight: 400;
@@ -18,8 +31,7 @@
         }
 
         &:focus {
-            transition: 800ms;
-            background-color: #7a7a7a;
+            animation: click 600ms ease-in-out;
         }
     }
 
@@ -34,4 +46,15 @@
 
 .equal {
     color: #feb800;
+}
+
+@keyframes click {
+    0%, 100% {
+        transform: scale(1);
+        background-color: #212624;
+    }
+    50% {
+        transform: scale(.9);
+        background-color: #7a7a7a;
+    }
 }

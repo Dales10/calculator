@@ -4,13 +4,14 @@ type DisplayProps = {
     datas: {
         equation: string[];
         result: number;
+        resultColor: { color: string };
     }
 }
 
 const Display = ({ datas }: DisplayProps) => {
-    const formattedCalculation = datas.equation.reduce((values, value) => {
+    let formattedCalculation = (datas.equation.reduce((values, value) => {
         return values += value;
-    }, '');
+    }, '')).replaceAll('.', ',');
 
     const result = () => {
         if (isNaN(datas.result))
@@ -22,10 +23,10 @@ const Display = ({ datas }: DisplayProps) => {
 
     return (
         <div className={styles.display}>
-            <div className={styles.calculation}>
+            <div style={{ color: '#e1e8f8' }} className={styles.calculation}>
                 {formattedCalculation}
             </div>
-            <div className={styles.result}>
+            <div style={datas.resultColor} className={styles.result}>
                 {result()}
             </div>
         </div>

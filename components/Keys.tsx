@@ -1,19 +1,20 @@
 import styles from '../styles/keys.module.scss';
 import { useState } from 'react';
+import { FiDelete } from 'react-icons/fi';
 
 type KeysProps = {
-    print: (values: string[], result: number) => void;
+    print: (values: string[], result: number, origin: string) => void;
     message: () => void;
 }
 
 const Keys = ({ print, message }: KeysProps) => {
     //Manipula um array com todos os valores válidos adicionados.
     const [values, setValues] = useState<string[]>([]);
-    const [newCalculation, setNewCalculation] = useState(false);
+    const [colorIcon, setColorIcon] = useState('#6d6d6d');
     let result: number = NaN;
 
-    const update = () => {
-        print(values, result);
+    const update = (origin: string) => {
+        print(values, result, origin);
     };
 
     //Adiciona novos valores no cálculo e no Display.
@@ -22,11 +23,7 @@ const Keys = ({ print, message }: KeysProps) => {
     }
 
     const add = (value: string) => {
-        //Quando o primeiro valor do novo cálculo for digitado, reseta o array de 'values'.
-        if (newCalculation) {
-            setNewCalculation(false);
-            values.length = 0;
-        }
+        setColorIcon('#FFFFFF');
         const newValues = values;
         //Caso o último valor adicionado e o atual sejam ambos algum dos caracteres abaixo, trocará o anterior pelo atual no cálculo.
         const lastValueAdd = ['/', '*', '-', '+'].some(elem => {
@@ -60,14 +57,12 @@ const Keys = ({ print, message }: KeysProps) => {
                 const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
                     return elem == newValues[loop];
                 });
-                if (arithmeticSign) {
-                    break;
-                }
-                if (newValues[loop] == ')') {
+                if (arithmeticSign) break;
+
+                if (newValues[loop] == ')')
                     closure++;
-                } else if (newValues[loop] == '(') {
+                else if (newValues[loop] == '(')
                     opening++;
-                }
             }
             if (opening == closure) {
                 newValues.push('*');
@@ -75,17 +70,34 @@ const Keys = ({ print, message }: KeysProps) => {
             }
         }
 
-        newValues.push(value);
-        //Troca o sinal do último valor adicionado. Se estiver positivo fica negativo, ou o inverso.
-        if (value == '(-' && !isNaN(Number(values[values.length - 2]))) {
-            if (newValues[newValues.length - 3] == '(-') {
-                newValues.splice(newValues.length - 3, 1);
-                newValues.pop();
-            } else {
-                newValues.splice(newValues.length - 2, 0, value);
-                newValues.pop();
+        if (value == '(-' && !isNaN(Number(valueIsNumber()))) {
+            let countNumbers = 0;
+            for (let loop = values.length - 1; loop >= 0; loop--) {
+                if (!isNaN(Number(newValues[loop])))
+                    countNumbers++;
             }
+            if (newValues[newValues.length - ( 1 + countNumbers )] == '(-')
+                newValues.splice(newValues.length - ( 1 + countNumbers), 1);
+            else
+                newValues.splice(newValues.length - countNumbers, 0, value);
+            value = '';
         }
+
+        if (value == '.') {
+            let noNumber = false;
+            for (let loop = values.length - 1; loop >= 0; loop--) {
+                if (isNaN(Number(values[loop])) && values[loop] != '.')
+                    break;
+                else if (values[loop] == '.')
+                    noNumber = true;
+            }
+            if (noNumber)
+                value = '';
+            else if (!isNaN(Number(valueIsNumber)) && valueIsNumber() != '.')
+                newValues.push('0');
+        }
+
+        if (value != '') newValues.push(value);
 
         const valueAfterRelatives = ['/', '*'].some(elem => {
             return value == elem;
@@ -104,21 +116,14 @@ const Keys = ({ print, message }: KeysProps) => {
             }
         }
         setValues(newValues);
-        update();
+        calculate('addValue')
     };
 
     //Efetua o cálculo com base nos valores passados.
-    const calculate = () => {
+    const calculate = (origin: string) => {
         var equation = '';
         for (let loop = 0; loop < values.length; loop++)
             equation += values[loop];
-
-        if (values.includes('(-')) {
-            const positionError = values.indexOf('(-');
-            const number = values[positionError + 1];
-            values.splice(positionError, 2, `(-${number}`);
-            calculate();
-        }
 
         //Se o último valor do cálculo não for válido, irá ativar a messagem de valor inválido.
         const lastValue = ["/", "*", "-", "+", "0."].some(elem => {
@@ -135,27 +140,46 @@ const Keys = ({ print, message }: KeysProps) => {
                 difference--;
             }
         }
+
         try {
             if (!lastValue)
                 result = eval(equation);
             else if (!isNaN(Number(equation)))
                 result = Number(equation);
-            update();
-            setNewCalculation(true)
-            add("");
+            update(origin);
+            if (origin == 'btn') {
+                const newValues = result.toString().split('');
+                setValues(newValues);
+            }
         } catch (err) {
-            message();
+            if (origin == 'btn') message();
         }
     };
 
     const resetAll = () => {
+        setColorIcon('#6d6d6d');
         values.length = 0;
         result = NaN;
-        update();
+        update('');
+    }
+
+    const deleteValue = () => {
+        const newValues = values;
+        newValues.pop();
+        setValues(newValues);
+        if (values.length == 0) setColorIcon('#6d6d6d');
+        update('');
     }
 
     return (
         <>
+            <div className={styles.delete}>
+                <FiDelete
+                    color={colorIcon}
+                    className={styles.btnDelete}
+                    onClick={deleteValue}
+                />
+            </div>
             <div className={styles.rowKeys}>
                 <button onClick={(e) => { resetAll(); e.currentTarget.blur(); }}>c</button>
                 <button onClick={(e) => { add('(-'); e.currentTarget.blur(); }}>+/-</button>
@@ -203,10 +227,10 @@ const Keys = ({ print, message }: KeysProps) => {
             <div className={styles.rowKeys}>
                 <button disabled className={styles.disabled}>⠀</button>
                 <button onClick={(e) => { add("0"); e.currentTarget.blur(); }}>0</button>
-                <button onClick={(e) => { add("0."); e.currentTarget.blur(); }}>,</button>
+                <button onClick={(e) => { add("."); e.currentTarget.blur(); }}>,</button>
                 <button
                     className={`${styles.operations} ${styles.equal}`}
-                    onClick={(e) => { calculate(); e.currentTarget.blur(); }}
+                    onClick={(e) => { calculate('btn'); e.currentTarget.blur(); }}
                 >
                     =
                 </button>
