@@ -3,15 +3,15 @@ import { useState } from 'react';
 import { FiDelete } from 'react-icons/fi';
 
 type KeysProps = {
-    print: (values: string[], result: number, origin: string) => void;
-    message: () => void;
+    print: (values: string[], result: string, origin: string) => void;
+    message: (alertBigMessage?: string) => void;
 }
 
 const Keys = ({ print, message }: KeysProps) => {
     //Manipula um array com todos os valores válidos adicionados.
     const [values, setValues] = useState<string[]>([]);
     const [colorIcon, setColorIcon] = useState('#6d6d6d');
-    let result: number = NaN;
+    let result: string = '';
 
     const update = (origin: string) => {
         print(values, result, origin);
@@ -23,100 +23,104 @@ const Keys = ({ print, message }: KeysProps) => {
     }
 
     const add = (value: string) => {
-        setColorIcon('#FFFFFF');
-        const newValues = values;
-        //Caso o último valor adicionado e o atual sejam ambos algum dos caracteres abaixo, trocará o anterior pelo atual no cálculo.
-        const lastValueAdd = ['/', '*', '-', '+'].some(elem => {
-            return valueIsNumber() == elem;
-        });
-        const valueAddNow = ['/', '*', '-', '+'].some(elem => {
-            return value == elem;
-        });
-        if (lastValueAdd && valueAddNow)
-            newValues.pop();
-
-        if (value == '(') {
-            //Fecha o parêntese que estiver aberto e antes dele tiver um número.
-            for (let loop = values.length - 1; loop > 0; loop--) {
-                const numberFound = !isNaN(Number(newValues[loop]));
-                //Caso o valor anterior seja um operador aritmético, não deve-se colocar um parêntese de fechamento.
-                const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
-                    return elem == newValues[loop];
-                })
-                if (arithmeticSign) break;
-                if (numberFound) value = ')';
-            }
-            //Se um parêntese for aberto depois de um número, sem nenhum operador aritmético depois dele, será colocado o sinal de multiplicação antes do parêntese.
-            if (!isNaN(Number((valueIsNumber()))) && value != ')')
-                newValues.push('*');
-        }
-        //Caso seja colocado um parêntese e antes tenha outro, um sinal de multiplicação será adicionado.
-        if (value == ')' && valueIsNumber() == ')') {
-            let opening = 0, closure = 0;
-            for (let loop = values.length - 1; loop >= 0; loop--) {
-                const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
-                    return elem == newValues[loop];
-                });
-                if (arithmeticSign) break;
-
-                if (newValues[loop] == ')')
-                    closure++;
-                else if (newValues[loop] == '(')
-                    opening++;
-            }
-            if (opening == closure) {
-                newValues.push('*');
-                value = '(';
-            }
-        }
-
-        if (value == '(-' && !isNaN(Number(valueIsNumber()))) {
-            let countNumbers = 0;
-            for (let loop = values.length - 1; loop >= 0; loop--) {
-                if (!isNaN(Number(newValues[loop])))
-                    countNumbers++;
-            }
-            if (newValues[newValues.length - ( 1 + countNumbers )] == '(-')
-                newValues.splice(newValues.length - ( 1 + countNumbers), 1);
-            else
-                newValues.splice(newValues.length - countNumbers, 0, value);
-            value = '';
-        }
-
-        if (value == '.') {
-            let noNumber = false;
-            for (let loop = values.length - 1; loop >= 0; loop--) {
-                if (isNaN(Number(values[loop])) && values[loop] != '.')
-                    break;
-                else if (values[loop] == '.')
-                    noNumber = true;
-            }
-            if (noNumber)
-                value = '';
-            else if (!isNaN(Number(valueIsNumber)) && valueIsNumber() != '.')
-                newValues.push('0');
-        }
-
-        if (value != '') newValues.push(value);
-
-        const valueAfterRelatives = ['/', '*'].some(elem => {
-            return value == elem;
-        });
-        if (valueAfterRelatives && values[values.length - 2] == '(')
-            values.pop();
-
-        if (newValues.length == 1 && isNaN(Number(newValues[0]))) {
-            //Se o primeiro valor digitado for qualquer caractere do array abaixo, ele não será aceito como primeiro valor.
-            const firstValue = ["/", "*", "-", "+"].some(elem => {
-                return newValues[0] == elem;
-            })
-            if (firstValue) {
+        if (values.length == 19) {
+            message('bigMessage');
+        } else {
+            setColorIcon('#FFFFFF');
+            const newValues = values;
+            //Caso o último valor adicionado e o atual sejam ambos algum dos caracteres abaixo, trocará o anterior pelo atual no cálculo.
+            const lastValueAdd = ['/', '*', '-', '+'].some(elem => {
+                return valueIsNumber() == elem;
+            });
+            const valueAddNow = ['/', '*', '-', '+'].some(elem => {
+                return value == elem;
+            });
+            if (lastValueAdd && valueAddNow)
                 newValues.pop();
-                message();
+
+            if (value == '(') {
+                //Fecha o parêntese que estiver aberto e antes dele tiver um número.
+                for (let loop = values.length - 1; loop > 0; loop--) {
+                    const numberFound = !isNaN(Number(newValues[loop]));
+                    //Caso o valor anterior seja um operador aritmético, não deve-se colocar um parêntese de fechamento.
+                    const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
+                        return elem == newValues[loop];
+                    })
+                    if (arithmeticSign) break;
+                    if (numberFound) value = ')';
+                }
+                //Se um parêntese for aberto depois de um número, sem nenhum operador aritmético depois dele, será colocado o sinal de multiplicação antes do parêntese.
+                if (!isNaN(Number((valueIsNumber()))) && value != ')')
+                    newValues.push('*');
             }
+            //Caso seja colocado um parêntese e antes tenha outro, um sinal de multiplicação será adicionado.
+            if (value == ')' && valueIsNumber() == ')') {
+                let opening = 0, closure = 0;
+                for (let loop = values.length - 1; loop >= 0; loop--) {
+                    const arithmeticSign = ['/', '*', '-', '+'].some(elem => {
+                        return elem == newValues[loop];
+                    });
+                    if (arithmeticSign) break;
+
+                    if (newValues[loop] == ')')
+                        closure++;
+                    else if (newValues[loop] == '(')
+                        opening++;
+                }
+                if (opening == closure) {
+                    newValues.push('*');
+                    value = '(';
+                }
+            }
+
+            if (value == '(-' && !isNaN(Number(valueIsNumber()))) {
+                let countNumbers = 0;
+                for (let loop = values.length - 1; loop >= 0; loop--) {
+                    if (!isNaN(Number(newValues[loop])))
+                        countNumbers++;
+                }
+                if (newValues[newValues.length - (1 + countNumbers)] == '(-')
+                    newValues.splice(newValues.length - (1 + countNumbers), 1);
+                else
+                    newValues.splice(newValues.length - countNumbers, 0, value);
+                value = '';
+            }
+
+            if (value == '.') {
+                let noNumber = false;
+                for (let loop = values.length - 1; loop >= 0; loop--) {
+                    if (isNaN(Number(values[loop])) && values[loop] != '.')
+                        break;
+                    else if (values[loop] == '.')
+                        noNumber = true;
+                }
+                if (noNumber)
+                    value = '';
+                else if (!isNaN(Number(valueIsNumber)) && valueIsNumber() != '.')
+                    newValues.push('0');
+            }
+
+            if (value != '') newValues.push(value);
+
+            const valueAfterRelatives = ['/', '*'].some(elem => {
+                return value == elem;
+            });
+            if (valueAfterRelatives && values[values.length - 2] == '(')
+                values.pop();
+
+            if (newValues.length == 1 && isNaN(Number(newValues[0]))) {
+                //Se o primeiro valor digitado for qualquer caractere do array abaixo, ele não será aceito como primeiro valor.
+                const firstValue = ["/", "*", "-", "+"].some(elem => {
+                    return newValues[0] == elem;
+                })
+                if (firstValue) {
+                    newValues.pop();
+                    message();
+                }
+            }
+            setValues(newValues);
+            calculate('addValue')
         }
-        setValues(newValues);
-        calculate('addValue')
     };
 
     //Efetua o cálculo com base nos valores passados.
@@ -145,7 +149,9 @@ const Keys = ({ print, message }: KeysProps) => {
             if (!lastValue)
                 result = eval(equation);
             else if (!isNaN(Number(equation)))
-                result = Number(equation);
+                result = equation;
+            if (result.toString().length >= 11)
+                result = Number(result).toExponential(3);
             update(origin);
             if (origin == 'btn') {
                 const newValues = result.toString().split('');
@@ -159,7 +165,7 @@ const Keys = ({ print, message }: KeysProps) => {
     const resetAll = () => {
         setColorIcon('#6d6d6d');
         values.length = 0;
-        result = NaN;
+        result = '';
         update('');
     }
 

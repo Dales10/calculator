@@ -5,15 +5,16 @@ import { useState } from 'react';
 
 type DatasProps = {
     equation: string[];
-    result: number;
+    result: string;
     resultColor: { color: string };
 }
 
 const Body = () => {
-    const [datas, setDatas] = useState<DatasProps>({ equation: [], result: NaN, resultColor: { color: '#a1a1a1' } });
+    const [datas, setDatas] = useState<DatasProps>({ equation: [], result: '', resultColor: { color: '#a1a1a1' } });
     const [messageInvalid, setMessageInvalid] = useState({ opacity: 0 });
+    const [messageBig, setMessageBig] = useState({ opacity: 0 });
 
-    const print = (values: string[], result: number, origin: string) => {
+    const print = (values: string[], result: string, origin: string) => {
         let equation: string[] = values;
         let resultColor = { color: '#a1a1a1' };
         if (equation.includes('/') || equation.includes('*')) {
@@ -32,20 +33,29 @@ const Body = () => {
         setDatas({ equation, result, resultColor });
     };
 
-    const invalidMessageActivate = () => {
-        setMessageInvalid({ opacity: 1 })
+    const messageActivate = (alertBigMessage?: string) => {
+        if (alertBigMessage == 'bigMessage')
+            setMessageBig({ opacity: 1 });
+        else
+            setMessageInvalid({ opacity: 1 });
         setTimeout(() => {
-            setMessageInvalid({ opacity: 0 })
+            if (alertBigMessage == 'bigMessage')
+                setMessageBig({ opacity: 0 });
+            else
+                setMessageInvalid({ opacity: 0 });
         }, 1000);
-    }
+    };
 
     return (
         <div className={styles.body}>
             <Display datas={datas} />
-            <Keys print={print} message={invalidMessageActivate} />
+            <Keys print={print} message={messageActivate} />
 
-            <div style={messageInvalid} className={styles.messageInvalid}>
+            <div style={messageInvalid} className={styles.messageStyle}>
                 <p>Formato usado inválido.</p>
+            </div>
+            <div style={messageBig} className={styles.messageStyle}>
+                <p>Cálculo muito grande.</p>
             </div>
         </div>
     );
